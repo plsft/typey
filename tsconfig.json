@@ -17,8 +17,9 @@
 		"declaration": false,
 		"sourceMap": false,
 		"outDir": "./dist",
-		"rootDir": "./src",
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"noEmit": true,
+		"allowImportingTsExtensions": true
 	},
 	"include": ["src/**/*", "tests/**/*"],
 	"exclude": ["node_modules", "dist"]
