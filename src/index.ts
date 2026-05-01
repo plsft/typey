@@ -5,6 +5,7 @@
  * Usage:
  *   typey <case> <text...>
  *   echo "hello world" | typey <case>
+ *   typey figlet <text...>
  *
  * Cases: camel, snake, kebab, pascal, upper, lower
  *
@@ -12,8 +13,10 @@
  *   typey snake "Hello World"        # hello_world
  *   typey camel "user-id-name"       # userIdName
  *   echo "API_KEY" | typey kebab     # api-key
+ *   typey figlet "Hello World"       # renders ASCII art text
  */
 
+import figlet from "figlet";
 import { isCaseName, KNOWN_CASES, transform } from "./transforms.ts";
 
 const HELP = `typey — text case converter
@@ -21,14 +24,19 @@ const HELP = `typey — text case converter
 Usage:
   typey <case> <text...>
   echo "<text>" | typey <case>
+  typey figlet <text...>
 
 Cases:
   ${KNOWN_CASES.join(", ")}
+
+Commands:
+  figlet    Render text as ASCII art using a figlet font
 
 Examples:
   typey snake "Hello World"     -> hello_world
   typey camel "user-id-name"    -> userIdName
   echo "API_KEY" | typey kebab  -> api-key
+  typey figlet "Hello World"    -> ASCII art text
 `;
 
 async function readStdin(): Promise<string> {
@@ -56,10 +64,28 @@ async function main(): Promise<number> {
 		return 0;
 	}
 
-	const caseName = args[0];
-	if (!caseName || !isCaseName(caseName)) {
+	const command = args[0];
+
+	// figlet command
+	if (command === "figlet") {
+		let input: string;
+		if (args.length > 1) {
+			input = args.slice(1).join(" ");
+		} else {
+			input = (await readStdin()).trim();
+			if (!input) {
+				console.error("No input. Pass text as arguments or pipe it on stdin.");
+				return 2;
+			}
+		}
+		const result = figlet.textSync(input);
+		console.log(result);
+		return 0;
+	}
+
+	if (!command || !isCaseName(command)) {
 		console.error(
-			`Unknown case: ${caseName}. Try one of: ${KNOWN_CASES.join(", ")}`,
+			`Unknown command: ${command}. Try one of: ${KNOWN_CASES.join(", ")}, figlet`,
 		);
 		return 2;
 	}
@@ -75,7 +101,7 @@ async function main(): Promise<number> {
 		}
 	}
 
-	console.log(transform(caseName, input));
+	console.log(transform(command, input));
 	return 0;
 }
 
