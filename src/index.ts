@@ -24,20 +24,40 @@ const HELP = `typey — text case converter
 Usage:
   typey <case> <text...>
   echo "<text>" | typey <case>
-  typey figlet <text...>
+  typey figlet [--rainbow|--no-color] <text...>
 
 Cases:
   ${KNOWN_CASES.join(", ")}
 
 Commands:
-  figlet    Render text as ASCII art using a figlet font
+  figlet    Render text as ASCII art using a figlet font.
+            Colorized with a rainbow gradient when stdout is a TTY.
+            Use --no-color to disable, or --rainbow to force colors.
 
 Examples:
   typey snake "Hello World"     -> hello_world
   typey camel "user-id-name"    -> userIdName
   echo "API_KEY" | typey kebab  -> api-key
-  typey figlet "Hello World"    -> ASCII art text
+  typey figlet "Hello World"    -> rainbow ASCII art text
 `;
+
+// 256-color ANSI rainbow palette (red→orange→yellow→green→cyan→blue→magenta).
+const RAINBOW_COLORS = [196, 202, 208, 214, 220, 226, 154, 118, 82, 46, 48, 51, 45, 39, 33, 27, 56, 92, 128, 164, 200];
+
+function rainbowize(text: string): string {
+	const lines = text.split("\n");
+	return lines
+		.map((line, lineIdx) =>
+			Array.from(line)
+				.map((ch, colIdx) => {
+					if (ch === " ") return ch;
+					const color = RAINBOW_COLORS[(colIdx + lineIdx) % RAINBOW_COLORS.length];
+					return `\x1b[38;5;${color}m${ch}\x1b[0m`;
+				})
+				.join(""),
+		)
+		.join("\n");
+}
 
 async function readStdin(): Promise<string> {
 	if (process.stdin.isTTY) return "";
@@ -68,9 +88,14 @@ async function main(): Promise<number> {
 
 	// figlet command
 	if (command === "figlet") {
+		const rest = args.slice(1);
+		const noColor = rest.includes("--no-color");
+		const forceColor = rest.includes("--rainbow");
+		const textArgs = rest.filter((a) => a !== "--no-color" && a !== "--rainbow");
+
 		let input: string;
-		if (args.length > 1) {
-			input = args.slice(1).join(" ");
+		if (textArgs.length > 0) {
+			input = textArgs.join(" ");
 		} else {
 			input = (await readStdin()).trim();
 			if (!input) {
@@ -79,7 +104,8 @@ async function main(): Promise<number> {
 			}
 		}
 		const result = figlet.textSync(input);
-		console.log(result);
+		const useColor = forceColor || (!noColor && Boolean(process.stdout.isTTY));
+		console.log(useColor ? rainbowize(result) : result);
 		return 0;
 	}
 
