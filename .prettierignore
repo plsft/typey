@@ -1,0 +1,6 @@
+dist
+node_modules
+bun.lock
+*.md
+LICENSE
+.github/workflows
