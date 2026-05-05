@@ -41,11 +41,7 @@ describe("figlet command", () => {
 	});
 
 	test("joins multiple args with spaces", async () => {
-		const { stdout, exitCode } = await runTypey([
-			"figlet",
-			"Hello",
-			"World",
-		]);
+		const { stdout, exitCode } = await runTypey(["figlet", "Hello", "World"]);
 		const expected = figlet.textSync("Hello World");
 		expect(exitCode).toBe(0);
 		expect(stdout).toBe(`${expected}\n`);
@@ -67,10 +63,7 @@ describe("figlet command", () => {
 	});
 
 	test("args take precedence over stdin", async () => {
-		const { stdout, exitCode } = await runTypey(
-			["figlet", "FromArgs"],
-			"FromStdin\n",
-		);
+		const { stdout, exitCode } = await runTypey(["figlet", "FromArgs"], "FromStdin\n");
 		const expected = figlet.textSync("FromArgs");
 		expect(exitCode).toBe(0);
 		expect(stdout).toBe(`${expected}\n`);

@@ -42,7 +42,9 @@ Examples:
 `;
 
 // 256-color ANSI rainbow palette (red→orange→yellow→green→cyan→blue→magenta).
-const RAINBOW_COLORS = [196, 202, 208, 214, 220, 226, 154, 118, 82, 46, 48, 51, 45, 39, 33, 27, 56, 92, 128, 164, 200];
+const RAINBOW_COLORS = [
+	196, 202, 208, 214, 220, 226, 154, 118, 82, 46, 48, 51, 45, 39, 33, 27, 56, 92, 128, 164, 200,
+];
 
 function rainbowize(text: string): string {
 	const lines = text.split("\n");
@@ -110,9 +112,7 @@ async function main(): Promise<number> {
 	}
 
 	if (!command || !isCaseName(command)) {
-		console.error(
-			`Unknown command: ${command}. Try one of: ${KNOWN_CASES.join(", ")}, figlet`,
-		);
+		console.error(`Unknown command: ${command}. Try one of: ${KNOWN_CASES.join(", ")}, figlet`);
 		return 2;
 	}
 

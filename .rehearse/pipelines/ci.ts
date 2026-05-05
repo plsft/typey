@@ -1,14 +1,30 @@
-import { pipeline, job, step, triggers, Runner } from '@rehearse/ci';
-import { bun } from '@rehearse/ci/presets';
+import { job, pipeline, Runner, step, triggers } from "@rehearse/ci";
 
-export const ci = pipeline('CI', {
-  triggers: [triggers.pullRequest(), triggers.push({ branches: ['main'] })],
-  jobs: [
-    job('test', {
-      runner: Runner.ubicloud('standard-4'),
-      // bun.build() omitted by default — `bun init` doesn't scaffold a
-      // build script. Add it back if your package.json has one.
-      steps: [step.checkout(), bun.setup(), bun.install(), bun.test()],
-    }),
-  ],
+export const ci = pipeline("CI", {
+	triggers: [triggers.pullRequest(), triggers.push({ branches: ["main"] })],
+	jobs: [
+		job("test", {
+			runner: Runner.github("${{ matrix.os }}"),
+			matrix: {
+				variables: {
+					os: ["ubuntu-latest", "macos-latest", "windows-latest"],
+					"bun-version": ["1.2.x", "1.3.x", "latest"],
+				},
+				failFast: false,
+			},
+			steps: [
+				step.checkout(),
+				step.action("oven-sh/setup-bun@v2", {
+					name: "Setup Bun ${{ matrix.bun-version }}",
+					with: { "bun-version": "${{ matrix.bun-version }}" },
+				}),
+				step.run("bun install --frozen-lockfile", { name: "Install dependencies" }),
+				step.run("bunx prettier --check .", { name: "Format check" }),
+				step.run("bunx eslint .", { name: "Lint" }),
+				step.run("bunx tsc --noEmit", { name: "Typecheck" }),
+				step.run("bun test", { name: "Test" }),
+				step.run("bun build src/index.ts --outdir dist --target bun", { name: "Build" }),
+			],
+		}),
+	],
 });
