@@ -4,9 +4,12 @@ export const ci = pipeline("CI", {
 	triggers: [triggers.pullRequest(), triggers.push({ branches: ["main"] })],
 	jobs: [
 		job("test", {
-			runner: Runner.github("ubuntu-latest"),
+			runner: Runner.github("${{ matrix.os }}"),
 			matrix: {
-				variables: { "bun-version": ["1.2.x", "1.3.x", "latest"] },
+				variables: {
+					os: ["ubuntu-latest", "macos-latest", "windows-latest"],
+					"bun-version": ["1.2.x", "1.3.x", "latest"],
+				},
 				failFast: false,
 			},
 			steps: [
