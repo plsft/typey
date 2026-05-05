@@ -5,6 +5,7 @@
     "": {
       "name": "typey",
       "dependencies": {
+        "@types/node": "^25.6.0",
         "figlet": "^1.11.0",
       },
       "devDependencies": {
